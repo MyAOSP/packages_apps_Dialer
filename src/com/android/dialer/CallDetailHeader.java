@@ -334,7 +334,7 @@ public class CallDetailHeader {
             // call.
             if (phoneUtils.canSendSmsTo(number, numberPresentation)) {
                 entry.setSecondaryAction(
-                        R.drawable.ic_text_holo_light,
+                        R.drawable.ic_text_holo_dark,
                         new Intent(Intent.ACTION_SENDTO,
                             Uri.fromParts("sms", number, null)),
                         mResources.getString(R.string.description_send_text_message, nameOrNumber));
