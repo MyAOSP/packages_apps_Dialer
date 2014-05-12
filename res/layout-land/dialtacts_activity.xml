@@ -93,7 +93,7 @@
         <View
             android:layout_height="match_parent"
             android:layout_width="2dp"
-            android:background="@color/dialtacts_frame_color" />
+            android:background="@color/separator_color" />
         <FrameLayout
             android:layout_height="match_parent"
             android:layout_width="@dimen/fake_action_bar_height"

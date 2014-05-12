@@ -134,7 +134,7 @@
         android:layout_width="@dimen/fake_action_bar_height"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:background="@color/dialpad_call_button_color"
+        android:background="@color/background_dialpad"
         android:layoutDirection="locale">
         <ImageButton
             android:id="@+id/overflow_menu_on_dialpad"

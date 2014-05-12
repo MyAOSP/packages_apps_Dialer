@@ -76,14 +76,14 @@
             android:id="@+id/separator"
             android:layout_width="match_parent"
             android:layout_height="1dip"
-            android:background="@color/background_dialer_light"
+            android:background="@color/separator_color"
             android:layout_below="@+id/contact_background_sizer"
         />
         <View
             android:id="@+id/photo_text_bar"
             android:layout_width="match_parent"
             android:layout_height="42dip"
-            android:background="@color/call_detail_photo_bg"
+            android:background="@color/background_dialer_light"
             android:layout_alignParentStart="true"
             android:layout_alignBottom="@id/contact_background_sizer"
         />
