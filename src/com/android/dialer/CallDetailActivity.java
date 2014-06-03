@@ -17,6 +17,8 @@
 package com.android.dialer;
 
 import android.app.Activity;
+import android.app.LoaderManager.LoaderCallbacks;
+import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -29,6 +31,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.CallLog;
+import android.provider.ContactsContract;
 import android.provider.CallLog.Calls;
 import android.provider.Contacts.Intents.Insert;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
@@ -50,6 +53,8 @@ import android.widget.Toast;
 
 import com.android.contacts.common.ContactPhotoManager;
 import com.android.contacts.common.CallUtil;
+import com.android.contacts.common.ClipboardUtils;
+import com.android.contacts.common.ContactPhotoManager.DefaultImageRequest;
 import com.android.contacts.common.GeoUtil;
 import com.android.contacts.common.util.UriUtils;
 import com.android.dialer.BackScrollManager.ScrollableHeader;
@@ -57,7 +62,7 @@ import com.android.dialer.calllog.CallDetailHistoryAdapter;
 import com.android.dialer.calllog.CallTypeHelper;
 import com.android.dialer.calllog.ContactInfo;
 import com.android.dialer.calllog.ContactInfoHelper;
-import com.android.dialer.calllog.PhoneNumberHelper;
+import com.android.dialer.calllog.PhoneNumberDisplayHelper;
 import com.android.dialer.calllog.PhoneNumberUtilsWrapper;
 import com.android.dialer.util.AsyncTaskExecutor;
 import com.android.dialer.util.AsyncTaskExecutors;
@@ -101,7 +106,7 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
 
     private CallDetailHeader mCallDetailHeader;
     private CallTypeHelper mCallTypeHelper;
-    private PhoneNumberHelper mPhoneNumberHelper;
+    private PhoneNumberDisplayHelper mPhoneNumberHelper;
     private PhoneCallDetailsHelper mPhoneCallDetailsHelper;
     private TextView mHeaderTextView;
     private AsyncTaskExecutor mAsyncTaskExecutor;
@@ -410,6 +415,35 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
         mAsyncTaskExecutor.submit(Tasks.UPDATE_PHONE_CALL_DETAILS, new UpdateContactDetailsTask());
     }
 
+    private void bindContactPhotoAction(final Intent actionIntent, int actionIcon,
+            String actionDescription) {
+        if (actionIntent == null) {
+            mMainActionView.setVisibility(View.INVISIBLE);
+            mMainActionPushLayerView.setVisibility(View.GONE);
+            mHeaderTextView.setVisibility(View.INVISIBLE);
+            mHeaderOverlayView.setVisibility(View.INVISIBLE);
+        } else {
+            mMainActionView.setVisibility(View.VISIBLE);
+            mMainActionView.setImageResource(actionIcon);
+            mMainActionPushLayerView.setVisibility(View.VISIBLE);
+            mMainActionPushLayerView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    try {
+                        startActivity(actionIntent);
+                    } catch (ActivityNotFoundException e) {
+                        final Toast toast = Toast.makeText(CallDetailActivity.this,
+                                R.string.add_contact_not_available, Toast.LENGTH_SHORT);
+                        toast.show();
+                    }
+                }
+            });
+            mMainActionPushLayerView.setContentDescription(actionDescription);
+            mHeaderTextView.setVisibility(View.VISIBLE);
+            mHeaderOverlayView.setVisibility(View.VISIBLE);
+        }
+    }
+
     /** Return the phone call details for a given call log URI. */
     private PhoneCallDetails getPhoneCallDetailsForUri(Uri callUri) {
         ContentResolver resolver = getContentResolver();
@@ -441,6 +475,7 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
             final CharSequence numberLabel;
             final Uri photoUri;
             final Uri lookupUri;
+            int sourceType;
             // If this is not a regular number, there is no point in looking it up in the contacts.
             ContactInfo info =
                     PhoneNumberUtilsWrapper.canPlaceCallsTo(number, numberPresentation)
@@ -455,6 +490,7 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
                 numberLabel = "";
                 photoUri = null;
                 lookupUri = null;
+                sourceType = 0;
             } else {
                 formattedNumber = info.formattedNumber;
                 nameText = info.name;
@@ -462,11 +498,12 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
                 numberLabel = info.label;
                 photoUri = info.photoUri;
                 lookupUri = info.lookupUri;
+                sourceType = info.sourceType;
             }
             return new PhoneCallDetails(number, numberPresentation,
                     formattedNumber, countryIso, geocode,
                     new int[]{ callType }, date, duration,
-                    nameText, numberType, numberLabel, lookupUri, photoUri);
+                    nameText, numberType, numberLabel, lookupUri, photoUri, sourceType);
         } finally {
             if (callCursor != null) {
                 callCursor.close();
