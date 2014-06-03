@@ -45,12 +45,13 @@ import android.content.Loader;
 import com.android.contacts.common.CallUtil;
 import com.android.contacts.common.ClipboardUtils;
 import com.android.contacts.common.ContactPhotoManager;
+import com.android.contacts.common.ContactPhotoManager.DefaultImageRequest;
 import com.android.contacts.common.model.Contact;
 import com.android.contacts.common.model.ContactLoader;
 import com.android.contacts.common.format.FormatUtils;
 import com.android.contacts.common.util.Constants;
 import com.android.contacts.common.util.UriUtils;
-import com.android.dialer.calllog.PhoneNumberHelper;
+import com.android.dialer.calllog.PhoneNumberDisplayHelper;
 import com.android.dialer.calllog.PhoneNumberUtilsWrapper;
 
 import android.provider.ContactsContract.DisplayNameSources;
@@ -66,7 +67,7 @@ public class CallDetailHeader {
 
     private Activity mActivity;
     private Resources mResources;
-    private PhoneNumberHelper mPhoneNumberHelper;
+    private PhoneNumberDisplayHelper mPhoneNumberHelper;
     private ContactPhotoManager mContactPhotoManager;
 
     private String mNumber;
@@ -83,6 +84,9 @@ public class CallDetailHeader {
 
     private CharSequence mPhoneNumberLabelToCopy;
     private CharSequence mPhoneNumberToCopy;
+
+    private String displayName;
+    private String identifier;
 
     public interface Data {
         CharSequence getName();
@@ -155,7 +159,7 @@ public class CallDetailHeader {
         }
     };
 
-    public CallDetailHeader(Activity activity, PhoneNumberHelper phoneNumberHelper) {
+    public CallDetailHeader(Activity activity, PhoneNumberDisplayHelper phoneNumberHelper) {
         mActivity = activity;
         mResources = activity.getResources();
         mPhoneNumberHelper = phoneNumberHelper;
@@ -351,6 +355,9 @@ public class CallDetailHeader {
 
         mHasEditNumberBeforeCallOption =
             mCanPlaceCallsTo && !isSipNumber && !isVoicemailNumber;
+
+        displayName = nameOrNumber.toString();
+        identifier = contactUri.toString();
     }
 
     private void bindContactPhotoAction(final Intent actionIntent, int actionIcon,
@@ -378,8 +385,9 @@ public class CallDetailHeader {
 
     /** Load the contact photos and places them in the corresponding views. */
     public void loadContactPhotos(Uri photoUri) {
+        DefaultImageRequest request = new DefaultImageRequest(displayName, identifier);
         mContactPhotoManager.loadPhoto(mContactBackgroundView, photoUri,
-                mContactBackgroundView.getWidth(), true);
+                mContactBackgroundView.getWidth(), true, request);
     }
 
     public boolean canEditNumberBeforeCall() {

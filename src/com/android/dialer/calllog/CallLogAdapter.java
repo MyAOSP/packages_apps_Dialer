@@ -125,7 +125,7 @@ public class CallLogAdapter extends GroupingListAdapter
         CallTypeHelper callTypeHelper = new CallTypeHelper(resources);
 
         mContactPhotoManager = ContactPhotoManager.getInstance(mContext);
-        mPhoneNumberHelper = new PhoneNumberHelper(resources);
+        mPhoneNumberHelper = new PhoneNumberDisplayHelper(resources);
         mAdapterHelper = new CallLogAdapterHelper(context, this,
                 contactInfoHelper, mPhoneNumberHelper);
         PhoneCallDetailsHelper phoneCallDetailsHelper = new PhoneCallDetailsHelper(

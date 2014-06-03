@@ -26,13 +26,15 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 
 import com.android.contacts.common.ContactPhotoManager;
+import com.android.contacts.common.ContactPhotoManager.DefaultImageRequest;
 import com.android.contacts.common.CallUtil;
 import com.android.contacts.common.GeoUtil;
 import com.android.dialer.R;
+import com.android.dialer.calllog.CallLogAdapter;
 import com.android.dialer.calllog.CallLogAdapterHelper;
 import com.android.dialer.calllog.ContactInfo;
 import com.android.dialer.calllog.ContactInfoHelper;
-import com.android.dialer.calllog.PhoneNumberHelper;
+import com.android.dialer.calllog.PhoneNumberDisplayHelper;
 import com.android.dialer.calllog.PhoneNumberUtilsWrapper;
 
 import java.util.ArrayList;
@@ -62,6 +64,7 @@ class CallStatsAdapter extends ArrayAdapter<CallStatsDetails>
     };
 
     private final Context mContext;
+    private final ContactInfoHelper mContactInfoHelper;
     private final CallDataLoader mDataLoader;
     private final CallLogAdapterHelper mAdapterHelper;
     private final CallStatsDetailHelper mCallStatsDetailHelper;
@@ -109,14 +112,13 @@ class CallStatsAdapter extends ArrayAdapter<CallStatsDetails>
         mInfoLookup = new ConcurrentHashMap<ContactInfo, CallStatsDetails>();
 
         Resources resources = mContext.getResources();
-        PhoneNumberHelper phoneNumberHelper = new PhoneNumberHelper(resources);
+        PhoneNumberDisplayHelper phoneNumberHelper = new PhoneNumberDisplayHelper(resources);
 
         final String currentCountryIso = GeoUtil.getCurrentCountryIso(mContext);
-        final ContactInfoHelper contactInfoHelper =
-                new ContactInfoHelper(mContext, currentCountryIso);
+        mContactInfoHelper = new ContactInfoHelper(mContext, currentCountryIso);
 
         mAdapterHelper = new CallLogAdapterHelper(mContext, this,
-                contactInfoHelper, phoneNumberHelper);
+                mContactInfoHelper, phoneNumberHelper);
         mContactPhotoManager = ContactPhotoManager.getInstance(mContext);
         mCallStatsDetailHelper = new CallStatsDetailHelper(resources,
                 new PhoneNumberUtilsWrapper());
@@ -207,7 +209,8 @@ class CallStatsAdapter extends ArrayAdapter<CallStatsDetails>
     private void bindView(int position, View v) {
         final CallStatsListItemViews views = (CallStatsListItemViews) v.getTag();
         final CallStatsDetails details = getItem(position);
-        final CallStatsDetails first = getItem(0);
+        final CallStatsDetails first = getItem(0);// Lookup contacts with this number
+        final Uri lookupUri = details.contactUri;
 
         views.primaryActionView.setVisibility(View.VISIBLE);
         views.primaryActionView.setTag(IntentProvider.getCallStatsDetailIntentProvider(
@@ -215,7 +218,10 @@ class CallStatsAdapter extends ArrayAdapter<CallStatsDetails>
 
         mCallStatsDetailHelper.setCallStatsDetails(views.callStatsDetailViews,
                 details, first, mTotalItem, mType, mSortByDuration);
-        setPhoto(views, details.photoId, details.contactUri);
+
+        String lookupKey = lookupUri == null ? null
+                : ContactInfoHelper.getLookupKeyFromUri(lookupUri);
+        setPhoto(views, details.photoId, details.contactUri, details.name, lookupKey);
 
         // Listen for the first draw
         mAdapterHelper.registerOnPreDrawListener(v);
@@ -227,9 +233,12 @@ class CallStatsAdapter extends ArrayAdapter<CallStatsDetails>
         view.setTag(views);
     }
 
-    private void setPhoto(CallStatsListItemViews views, long photoId, Uri contactUri) {
+    private void setPhoto(CallStatsListItemViews views, long photoId, Uri contactUri,
+            String displayName, String identifier) {
         views.quickContactView.assignContactUri(contactUri);
-        mContactPhotoManager.loadThumbnail(views.quickContactView, photoId, false);
+        DefaultImageRequest request = new DefaultImageRequest(displayName, identifier);
+        mContactPhotoManager.loadThumbnail(views.quickContactView, photoId, true /* darkTheme */,
+                request);
     }
 
     @Override
