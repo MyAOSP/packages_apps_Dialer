@@ -17,8 +17,6 @@
 package com.android.dialer;
 
 import android.app.Activity;
-import android.app.LoaderManager.LoaderCallbacks;
-import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -53,8 +51,6 @@ import android.widget.Toast;
 
 import com.android.contacts.common.ContactPhotoManager;
 import com.android.contacts.common.CallUtil;
-import com.android.contacts.common.ClipboardUtils;
-import com.android.contacts.common.ContactPhotoManager.DefaultImageRequest;
 import com.android.contacts.common.GeoUtil;
 import com.android.contacts.common.util.UriUtils;
 import com.android.dialer.BackScrollManager.ScrollableHeader;
@@ -408,7 +404,29 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
                             }
                         },
                         historyList);
-                mCallDetailHeader.loadContactPhotos(firstDetails.photoUri);
+                final CharSequence displayNumber =
+                        mPhoneNumberHelper.getDisplayNumber(
+                                firstDetails.number,
+                                firstDetails.numberPresentation,
+                                firstDetails.formattedNumber);
+
+                final String displayNameForDefaultImage = TextUtils.isEmpty(firstDetails.name) ?
+                        displayNumber.toString() : firstDetails.name.toString();
+
+                final String lookupKey = ContactInfoHelper.getLookupKeyFromUri(firstDetails.contactUri);
+
+                final boolean isBusiness = mContactInfoHelper.isBusiness(firstDetails.sourceType);
+
+                final boolean isVoicemailNumber =
+                        PhoneNumberUtilsWrapper.INSTANCE.isVoicemailNumber(firstDetails.number);
+
+                final int contactType =
+                        isVoicemailNumber? ContactPhotoManager.TYPE_VOICEMAIL :
+                        isBusiness ? ContactPhotoManager.TYPE_BUSINESS :
+                        ContactPhotoManager.TYPE_DEFAULT;
+
+                mCallDetailHeader.loadContactPhotos(firstDetails.photoUri, displayNameForDefaultImage, lookupKey, contactType);
+
                 findViewById(R.id.call_detail).setVisibility(View.VISIBLE);
             }
         }

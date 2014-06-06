@@ -68,7 +68,7 @@ public class CallLogAdapter extends GroupingListAdapter
     /** Helper to set up contact photos. */
     private final ContactPhotoManager mContactPhotoManager;
     /** Helper to parse and process phone numbers. */
-    private PhoneNumberDisplayHelper mPhoneNumberHelper;
+    private PhoneNumberDisplayHelper mPhoneNumberDisplayHelper;
     /** Helper to group call log entries. */
     private final CallLogGroupBuilder mCallLogGroupBuilder;
 
@@ -125,14 +125,15 @@ public class CallLogAdapter extends GroupingListAdapter
         CallTypeHelper callTypeHelper = new CallTypeHelper(resources);
 
         mContactPhotoManager = ContactPhotoManager.getInstance(mContext);
-        mPhoneNumberHelper = new PhoneNumberDisplayHelper(resources);
+        final PhoneNumberUtilsWrapper mPhoneNumberUtilsWrapper = new PhoneNumberUtilsWrapper();
+        mPhoneNumberDisplayHelper = new PhoneNumberDisplayHelper(mPhoneNumberUtilsWrapper, resources);
         mAdapterHelper = new CallLogAdapterHelper(context, this,
-                contactInfoHelper, mPhoneNumberHelper);
+                contactInfoHelper, mPhoneNumberDisplayHelper);
         PhoneCallDetailsHelper phoneCallDetailsHelper = new PhoneCallDetailsHelper(
-                resources, callTypeHelper, new PhoneNumberUtilsWrapper());
+                resources, callTypeHelper, mPhoneNumberUtilsWrapper);
         mCallLogViewsHelper =
                 new CallLogListItemHelper(
-                        phoneCallDetailsHelper, mPhoneNumberHelper, resources);
+                        phoneCallDetailsHelper, mPhoneNumberDisplayHelper, resources);
         mCallLogGroupBuilder = new CallLogGroupBuilder(this);
     }
 
@@ -301,7 +302,7 @@ public class CallLogAdapter extends GroupingListAdapter
 
         String nameForDefaultImage = null;
         if (TextUtils.isEmpty(name)) {
-            nameForDefaultImage = mPhoneNumberHelper.getDisplayNumber(details.number,
+            nameForDefaultImage = mPhoneNumberDisplayHelper.getDisplayNumber(details.number,
                     details.numberPresentation, details.formattedNumber).toString();
         } else {
             nameForDefaultImage = name;

@@ -185,7 +185,7 @@ public class CallLogAdapterHelper implements ViewTreeObserver.OnPreDrawListener 
     private Callback mCb;
     private final Context mContext;
     private final ContactInfoHelper mContactInfoHelper;
-    private final PhoneNumberDisplayHelper mPhoneNumberHelper;
+    private final PhoneNumberDisplayHelper mPhoneNumberDisplayHelper;
 
     /**
      * A cache of the contact details for the phone numbers in the call log.
@@ -458,7 +458,7 @@ public class CallLogAdapterHelper implements ViewTreeObserver.OnPreDrawListener 
         mContext = context;
         mCb = cb;
         mContactInfoHelper = contactInfoHelper;
-        mPhoneNumberHelper = phoneNumberHelper;
+        mPhoneNumberDisplayHelper = phoneNumberHelper;
 
         mContactInfoCache = ExpirableCache.create(CONTACT_INFO_CACHE_SIZE);
         mRequests = new LinkedList<ContactInfoRequest>();

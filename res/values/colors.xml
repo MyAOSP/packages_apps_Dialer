@@ -71,6 +71,7 @@
     <!-- Background color of action bars.  Ensure this stays in sync with packages/Telephony
          actionbar_background_color. -->
     <color name="actionbar_background_color">#3B77E7</color>
+
     <!-- Underline color of action bars.  Ensure this stays in sync with packages/Telephony
          actionbar_underline. -->
     <color name="actionbar_underline">#3265C1</color>
@@ -163,6 +164,7 @@
     <color name="call_log_voicemail_status_background_color">#050505</color>
     <color name="call_log_voicemail_status_text_color">#efefef</color>
     <color name="call_log_voicemail_status_action_text_color">#33b5e5</color>
+    <color name="dialtacts_frame_color">#33999999</color>
 
     <!-- Separator color -->
     <color name="separator_color">#A0656565</color>
