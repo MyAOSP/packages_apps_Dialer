@@ -60,9 +60,6 @@
     <!-- Background color where keypad digits are displayed -->
     <color name="background_digits_dialpad">#f2000000</color>
 
-    <!-- Background color of new dialpad -->
-    <color name="background_dialpad">#f2020202</color>
-
     <!-- Primary color of dialpad text, including the call button -->
     <color name="dialpad_primary_text_color">#fefefe</color>
     <!-- Secondary color of dialpad text (used for the letters corresponding to each digit -->
